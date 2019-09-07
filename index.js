@@ -80,28 +80,23 @@ app.post('/api/uploadObject', async (req,res) => {
 
     uploadParams.Body = fileStream;
 
-    try {
-        // call S3 to retrieve upload file to specified bucket
-        await s3.upload (uploadParams, async function (err, data) {
-            if (err) {
-                console.log("Error", err);
-            } if (data) {
-                console.log("Upload Success", data.Location);
+    // call S3 to retrieve upload file to specified bucket
+    await s3.upload (uploadParams, async function (err, data) {
+        if (err) {
+            console.log("Error", err);
+        } if (data) {
+            console.log("Upload Success", data.Location);
 
-                // Save in our database that the file was uploaded
-                // Configure database client and insert form to table
-  			    // const client = await pool.connect()
-  			    // await client.query('INSERT INTO objects (user_id, file_id, object_key) VALUES ($1, $2, $3)', [user_id, file_id, object_key]);
+            // Save in our database that the file was uploaded
+            // Configure database client and insert form to table
+            // const client = await pool.connect()
+            // await client.query('INSERT INTO objects (user_id, file_id, object_key) VALUES ($1, $2, $3)', [user_id, file_id, object_key]);
 
-  			    // Return created_on timestamp of when form was created
-  			    // client.release()
-                res.json(data.location);
-            }
-        });
-    } catch (err) {
-      console.error(err);
-      res.send("Error " + err);
-    }
+            // Return created_on timestamp of when form was created
+            // client.release()
+            res.json(data.location);
+        }
+    });
 });
 
 
