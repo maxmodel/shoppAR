@@ -47,15 +47,19 @@ app.post('/api/getObject', async (req,res) => {
     console.log("Will Get Object:", object_key);
 
     const signedUrlExpireSeconds = 60 * 1200
-    const url = await s3.getSignedUrl('getObject', {
-        Bucket: 'shoppar',
-        Key: object_key,
-        Expires: signedUrlExpireSeconds
-    })
+    try {
+            const url = await s3.getSignedUrl('getObject', {
+                Bucket: 'shoppar',
+                Key: object_key,
+                Expires: signedUrlExpireSeconds
+            })
 
-    console.log("url: ", url);
-    res.json({url:url});
-
+            console.log("url: ", url);
+            res.json({url:url});
+        } catch (err) {
+            console.error(err);
+            res.json({url:"no-url-found"});
+        }
 });
 
 
