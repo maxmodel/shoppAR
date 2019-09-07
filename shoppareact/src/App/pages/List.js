@@ -11,7 +11,32 @@ class List extends Component {
 
   // Fetch the list on first mount
   componentDidMount() {
-    this.getList();
+    // this.getList();
+    this.getObject();
+  }
+
+
+  getObject = async () => {
+      await fetch('/api/getObject', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userID: "johan",
+          fileID: "vase.scn",
+        }),
+      })
+      .then((response) => {
+
+        console.log("Got object:")
+        console.log(response)
+
+      })
+      .catch((error) => {
+         console.error(error);
+      });
   }
 
   // Retrieves the list of items from the Express app

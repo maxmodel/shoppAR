@@ -80,6 +80,67 @@ app.get('/api/getList', async (req,res) => {
             });
         }
     });
+});
+
+
+// Route to get an item with inputted ID
+app.get('/api/getObject', async (req,res) => {
+    var userID = req.body.userID;
+    var fileID = req.body.fileID;
+    var objectID = userID + "--" + fileID;
+
+    // Create the parameters for calling listObjects
+    var objectParams = {
+        Bucket : 'shoppar',
+        Key: objectID,
+    };
+
+    // Call S3 to obtain a list of the objects in the bucket
+    await s3.getObject(objectParams, function(err, data) {
+        if (err) {
+            console.log("Error retrieving object", err);
+        } else {
+            console.log("Retrieved object", data);
+
+        }
+    });
+
+
+
+    // // Call S3 to list the buckets
+    // await s3.listBuckets(function(err, data) {
+    //     if (err) {
+    //         console.log("Error", err);
+    //     } else {
+    //         console.log("Success", data.Buckets);
+    //         ourBucket = data.Buckets[0].Name;
+    //
+    //
+    //
+    //         // call S3 to retrieve upload file to specified bucket
+    //         var uploadParams = {Bucket: 'shoppar', Key: '', Body: ''};
+    //         var file = 'vase.scn';
+    //
+    //         // Configure the file stream and obtain the upload parameters
+    //         var fs = require('fs');
+    //         var fileStream = fs.createReadStream(file);
+    //         fileStream.on('error', function(err) {
+    //             console.log('File Error', err);
+    //         });
+    //         uploadParams.Body = fileStream;
+    //         var path = require('path');
+    //         uploadParams.Key = 'johan' + path.basename(file);
+    //
+    //         // call S3 to retrieve upload file to specified bucket
+    //         s3.upload (uploadParams, function (err, data) {
+    //             if (err) {
+    //                 console.log("Error", err);
+    //             } if (data) {
+    //                 console.log("Upload Success", data.Location);
+    //             }
+    //         });
+    //     }
+    // });
 
 
 });
