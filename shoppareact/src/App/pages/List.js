@@ -5,18 +5,20 @@ class List extends Component {
   constructor(props){
     super(props);
     this.state = {
-      list: []
+      list: [],
     }
   }
 
   // Fetch the list on first mount
-  componentDidMount() {
+  async componentWillMount() {
+    // console.log("yo");
     // this.getList();
-    this.getObject();
+    await this.getObject();
   }
 
 
   getObject = async () => {
+      // console.log("hey");
       await fetch('/api/getObject', {
         method: 'POST',
         headers: {
@@ -24,16 +26,12 @@ class List extends Component {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userID: "johan",
-          fileID: "vase.scn",
+          user_id: "johan",
+          file_id: "vase.scn",
         }),
       })
-      .then((response) => {
-
-        console.log("Got object:")
-        console.log(response)
-
-      })
+      .then(res => res.json())
+      .then(url => console.log(url))
       .catch((error) => {
          console.error(error);
       });

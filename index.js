@@ -21,6 +21,8 @@ const pool = new Pool({
 });
 
 // Serve the static files from the React app
+app.use(express.json())
+app.use(express.urlencoded({extended: true}))
 app.use(express.static(path.join(__dirname, 'client/build')));
 
 //////////////////////////////////////////////////
@@ -33,117 +35,76 @@ app.get('/api/getList', async (req,res) => {
     var ourBucket = '';
     res.json(list);
     console.log('Sent list of items');
-
-    // Call S3 to list the buckets
-    await s3.listBuckets(function(err, data) {
-        if (err) {
-            console.log("Error", err);
-        } else {
-            console.log("Success", data.Buckets);
-            ourBucket = data.Buckets[0].Name;
-
-            // // Create the parameters for calling listObjects
-            // var bucketParams = {
-            //     Bucket : ourBucket,
-            // };
-
-            // // Call S3 to obtain a list of the objects in the bucket
-            // s3.listObjects(bucketParams, function(err, data) {
-            //     if (err) {
-            //         console.log("Error", err);
-            //     } else {
-            //         console.log("Success", data);
-            //     }
-            // });
-
-            // call S3 to retrieve upload file to specified bucket
-            var uploadParams = {Bucket: 'shoppar', Key: '', Body: ''};
-            var file = 'vase.scn';
-
-            // Configure the file stream and obtain the upload parameters
-            var fs = require('fs');
-            var fileStream = fs.createReadStream(file);
-            fileStream.on('error', function(err) {
-                console.log('File Error', err);
-            });
-            uploadParams.Body = fileStream;
-            var path = require('path');
-            uploadParams.Key = 'johan' + path.basename(file);
-
-            // call S3 to retrieve upload file to specified bucket
-            s3.upload (uploadParams, function (err, data) {
-                if (err) {
-                    console.log("Error", err);
-                } if (data) {
-                    console.log("Upload Success", data.Location);
-                }
-            });
-        }
-    });
 });
 
 
 // Route to get an item with inputted ID
-app.get('/api/getObject', async (req,res) => {
-    var userID = req.body.userID;
-    var fileID = req.body.fileID;
-    var objectID = userID + "--" + fileID;
+app.post('/api/getObject', async (req,res) => {
+    var user_id = req.body.user_id;
+    var file_id = req.body.file_id;
+    var object_key = user_id + file_id;
 
-    // Create the parameters for calling listObjects
-    var objectParams = {
-        Bucket : 'shoppar',
-        Key: objectID,
-    };
+    console.log("Will Get Object:", object_key);
 
-    // Call S3 to obtain a list of the objects in the bucket
-    await s3.getObject(objectParams, function(err, data) {
-        if (err) {
-            console.log("Error retrieving object", err);
-        } else {
-            console.log("Retrieved object", data);
+    const signedUrlExpireSeconds = 60 * 60
+    const url = await s3.getSignedUrl('getObject', {
+        Bucket: 'shoppar',
+        Key: object_key,
+        Expires: signedUrlExpireSeconds
+    })
 
-        }
-    });
-
-
-
-    // // Call S3 to list the buckets
-    // await s3.listBuckets(function(err, data) {
-    //     if (err) {
-    //         console.log("Error", err);
-    //     } else {
-    //         console.log("Success", data.Buckets);
-    //         ourBucket = data.Buckets[0].Name;
-    //
-    //
-    //
-    //         // call S3 to retrieve upload file to specified bucket
-    //         var uploadParams = {Bucket: 'shoppar', Key: '', Body: ''};
-    //         var file = 'vase.scn';
-    //
-    //         // Configure the file stream and obtain the upload parameters
-    //         var fs = require('fs');
-    //         var fileStream = fs.createReadStream(file);
-    //         fileStream.on('error', function(err) {
-    //             console.log('File Error', err);
-    //         });
-    //         uploadParams.Body = fileStream;
-    //         var path = require('path');
-    //         uploadParams.Key = 'johan' + path.basename(file);
-    //
-    //         // call S3 to retrieve upload file to specified bucket
-    //         s3.upload (uploadParams, function (err, data) {
-    //             if (err) {
-    //                 console.log("Error", err);
-    //             } if (data) {
-    //                 console.log("Upload Success", data.Location);
-    //             }
-    //         });
-    //     }
-    // });
-
+    console.log("url: ", url);
+    res.json(url);
 
 });
+
+
+// Route to upload an item with inputted ID
+app.post('/api/uploadObject', async (req,res) => {
+    var user_id = req.body.user_id;
+    var file_id = req.body.file_id;
+    var object_key = "user" + user_id + "--file" + file_id;
+
+    console.log("Will Upload Object:", object_key);
+
+    // call S3 to retrieve upload file to specified bucket
+    var uploadParams = {Bucket: 'shoppar', Key: object_key, Body: ''};
+
+    // Configure the file stream and obtain the upload parameters
+    var fs = require('fs');
+    var file = 'vase.scn';
+    var fileStream = fs.createReadStream(file);
+    fileStream.on('error', function(err) {
+        console.log('File Error', err);
+    });
+
+    uploadParams.Body = fileStream;
+
+    try {
+        // call S3 to retrieve upload file to specified bucket
+        await s3.upload (uploadParams, async function (err, data) {
+            if (err) {
+                console.log("Error", err);
+            } if (data) {
+                console.log("Upload Success", data.Location);
+
+                // Save in our database that the file was uploaded
+                // Configure database client and insert form to table
+  			    // const client = await pool.connect()
+  			    // await client.query('INSERT INTO objects (user_id, file_id, object_key) VALUES ($1, $2, $3)', [user_id, file_id, object_key]);
+
+  			    // Return created_on timestamp of when form was created
+  			    // client.release()
+                res.json(data.location);
+            }
+        });
+    } catch (err) {
+      console.error(err);
+      res.send("Error " + err);
+    }
+});
+
+
 
 // Handles any requests that don't match the ones above
 app.get('*', (req,res) =>{
