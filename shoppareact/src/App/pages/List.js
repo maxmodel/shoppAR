@@ -5,13 +5,36 @@ class List extends Component {
   constructor(props){
     super(props);
     this.state = {
-      list: []
+      list: [],
     }
   }
 
   // Fetch the list on first mount
-  componentDidMount() {
-    this.getList();
+  async componentWillMount() {
+    // console.log("yo");
+    // this.getList();
+    await this.getObject();
+  }
+
+
+  getObject = async () => {
+      // console.log("hey");
+      await fetch('/api/getObject', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: "johan",
+          file_id: "vase.scn",
+        }),
+      })
+      .then(res => res.json())
+      .then(url => console.log(url))
+      .catch((error) => {
+         console.error(error);
+      });
   }
 
   // Retrieves the list of items from the Express app
