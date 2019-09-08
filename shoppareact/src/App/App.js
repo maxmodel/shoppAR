@@ -4,6 +4,8 @@ import './App.css';
 import Home from './pages/Home';
 import List from './pages/List';
 
+
+
 class App extends Component {
   render() {
     const App = () => (
@@ -16,7 +18,7 @@ class App extends Component {
     )
     return (
       <Switch>
-        <App/>
+        <App className="app"/>
       </Switch>
     );
   }
