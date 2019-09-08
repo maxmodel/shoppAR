@@ -23,7 +23,7 @@ const pool = new Pool({
 // Serve the static files from the React app
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
-app.use(express.static(path.join(__dirname, 'shoppereact/build')));
+app.use(express.static(path.join(__dirname, 'shoppareact/build')));
 
 
 //enable cors
@@ -126,8 +126,8 @@ app.post('/api/uploadObject', async (req,res) => {
 
 // Handles any requests that don't match the ones above
 app.get('*', (req,res) =>{
-    // res.sendFile(path.join(__dirname+'/shoppereact/build/index.html'));
-    res.sendFile(path.join(__dirname, 'shopperreact', 'build', 'index.html'));
+    res.sendFile(path.join(__dirname+'/shoppareact/build/index.html'));
+    // res.sendFile(path.join(__dirname, 'shopperreact', 'build', 'index.html'));
 });
 
 
