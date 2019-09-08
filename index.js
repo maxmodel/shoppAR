@@ -25,6 +25,11 @@ app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.use(express.static(path.join(__dirname, 'client/build')));
 
+
+//enable cors
+var cors = require('cors');
+app.use(cors());
+
 //////////////////////////////////////////////////
 ///////////////////// ROUTES /////////////////////
 //////////////////////////////////////////////////
@@ -48,18 +53,34 @@ app.post('/api/getObject', async (req,res) => {
 
     const signedUrlExpireSeconds = 60 * 1200
     try {
-            const url = await s3.getSignedUrl('getObject', {
+            let headParams = {
+                Bucket: 'shoppar',
+                Key: object_key,
+            }
+            let signedUrlParams = {
                 Bucket: 'shoppar',
                 Key: object_key,
                 Expires: signedUrlExpireSeconds
-            })
+            }
 
-            console.log("url: ", url);
-            res.json({url:url});
+            await s3.headObject(headParams, async function (err, metadata) {
+                if (err && err.code === 'NotFound') {
+                    // Handle no object on cloud here
+                    res.send({url:"no-url-found"})
+                } else {
+                    const url = await s3.getSignedUrl('getObject', signedUrlParams)
+                    console.log("url: ", url);
+                    res.json({url:url});
+                }
+            });
+
+
+
         } catch (err) {
             console.error(err);
             res.json({url:"no-url-found"});
         }
+
 });
 
 
@@ -67,6 +88,7 @@ app.post('/api/getObject', async (req,res) => {
 app.post('/api/uploadObject', async (req,res) => {
     var user_id = req.body.user_id;
     var file_id = req.body.file_id;
+    // file?
     var object_key = "user" + user_id + "--file" + file_id;
 
     console.log("Will Upload Object:", object_key);
