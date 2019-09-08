@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "heroku-postbuild": "cd shoppareact && npm install --only=dev && npm install && npm run build"
+    "heroku-postbuild": "cd shoppareact && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
