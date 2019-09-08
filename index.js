@@ -68,12 +68,13 @@ app.post('/api/getObject', async (req,res) => {
                     res.send({url:"no-url-found"})
                 } else {
                     const url = await s3.getSignedUrl('getObject', signedUrlParams)
-                    console.log("url: ", url);
+                    console.log("Found url: ", url);
                     res.json({url:url});
                 }
             });
         } catch (err) {
             console.error(err);
+            console.log("Error finding object", object_key)
             res.json({url:"no-url-found"});
         }
 
