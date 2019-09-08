@@ -49,8 +49,6 @@ app.post('/api/getObject', async (req,res) => {
     var file_id = req.body.file_id;
     var object_key = user_id + file_id;
 
-    console.log("Will Get Object:", object_key);
-
     const signedUrlExpireSeconds = 60 * 1200
     try {
             let headParams = {
@@ -66,6 +64,7 @@ app.post('/api/getObject', async (req,res) => {
             await s3.headObject(headParams, async function (err, metadata) {
                 if (err && err.code === 'NotFound') {
                     // Handle no object on cloud here
+                    console.log("Could not find object", object_key)
                     res.send({url:"no-url-found"})
                 } else {
                     const url = await s3.getSignedUrl('getObject', signedUrlParams)
@@ -73,9 +72,6 @@ app.post('/api/getObject', async (req,res) => {
                     res.json({url:url});
                 }
             });
-
-
-
         } catch (err) {
             console.error(err);
             res.json({url:"no-url-found"});
